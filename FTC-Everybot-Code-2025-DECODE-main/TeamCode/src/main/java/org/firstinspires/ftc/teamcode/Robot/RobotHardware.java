@@ -4,6 +4,8 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+// i just realized i should also have the motor configs here
+
 public class RobotHardware {
     public final Follower follower;
     public final Intake intake;
