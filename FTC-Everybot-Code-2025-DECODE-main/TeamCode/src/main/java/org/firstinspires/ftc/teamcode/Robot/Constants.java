@@ -12,6 +12,7 @@ public class Constants {
     public static String INTAKE_NAME         = "intake";
     public static String LEFT_ARM_NAME       = "left_flower";
     public static String RIGHT_ARM_NAME      = "right_flower";
+    public static String LIMELIGHT_NAME      = "limelight";
 
     // INTAKE
     public static double INTAKE_IN_POWER  = -0.8;
@@ -37,6 +38,10 @@ public class Constants {
     public static double LAUNCH_MAX_ANGULAR_SPEED = 0.7;
     public static double DRIVER_DEADZONE          = 0.1;
     public static double TRIGGER_THRESHOLD        = 0.2;
+
+    // LIMELIGHT (pose only corrected while the robot is nearly still)
+    public static double LIMELIGHT_MAX_LINEAR_SPEED  = 1.8;
+    public static double LIMELIGHT_MAX_ANGULAR_SPEED = 1.8;
 
     // RED TELEOP
     public static Pose RED_TARGET_SETPOINT =

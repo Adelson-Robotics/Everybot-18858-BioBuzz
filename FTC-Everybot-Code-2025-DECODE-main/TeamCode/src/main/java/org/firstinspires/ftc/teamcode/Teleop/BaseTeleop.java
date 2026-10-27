@@ -5,9 +5,12 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Limelight.LimelightPoseUpdater;
 import org.firstinspires.ftc.teamcode.Robot.Alliance;
 import org.firstinspires.ftc.teamcode.Robot.Catapult;
 import org.firstinspires.ftc.teamcode.Robot.Constants;
@@ -46,6 +49,7 @@ public abstract class BaseTeleop extends OpMode {
     @Override
     public void start() {
         robot.follower.startTeleopDrive();
+        robot.limelight.start();
         robot.catapult.down();
         changeState(State.STARTUP);
     }
@@ -53,6 +57,7 @@ public abstract class BaseTeleop extends OpMode {
     @Override
     public void loop() {
         robot.follower.update();
+        updatePoseFromLimelight();
 
         switch (state) {
             case STARTUP:              handleStartup(); break;
@@ -159,6 +164,23 @@ public abstract class BaseTeleop extends OpMode {
         } else if (gamepad1.dpad_down) {
             robot.arm.down();
         }
+    }
+
+    // Skipped while a path is running, since a pose jump would make the follower jerk.
+    private void updatePoseFromLimelight() {
+        if (state == State.NAVIGATING_TO_TARGET || holdingForAutoShot) return;
+        if (robot.getLinearSpeed() >= Constants.LIMELIGHT_MAX_LINEAR_SPEED
+                || robot.getAngularSpeed() >= Constants.LIMELIGHT_MAX_ANGULAR_SPEED) return;
+
+        LLResult result = robot.limelight.getLatestResult();
+        if (result == null || !result.isValid() || result.getBotposeTagCount() == 0) return;
+        Pose3D botpose = result.getBotpose();
+        if (botpose == null) return;
+
+        robot.follower.setPose(LimelightPoseUpdater.convertLimelightToPedro(
+                botpose.getPosition().x,
+                botpose.getPosition().y,
+                robot.follower.getPose().getHeading()));
     }
 
     private void changeState(State newState) {

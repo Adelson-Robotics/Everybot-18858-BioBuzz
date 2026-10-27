@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Robot;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Vector;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 // i just realized i should also have the motor configs here
@@ -11,12 +12,14 @@ public class RobotHardware {
     public final Intake intake;
     public final Catapult catapult;
     public final Arm arm;
+    public final Limelight3A limelight;
 
     public RobotHardware(HardwareMap hardwareMap, boolean isAuto) {
         follower = org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower(hardwareMap);
         intake = new Intake(hardwareMap);
         catapult = new Catapult(hardwareMap, isAuto);
         arm = new Arm(hardwareMap);
+        limelight = hardwareMap.get(Limelight3A.class, Constants.LIMELIGHT_NAME);
     }
 
     public void update() {
