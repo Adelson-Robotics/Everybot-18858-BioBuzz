@@ -6,7 +6,7 @@ import com.pedropathing.geometry.Pose;
 @Configurable
 public class Constants {
 
-    // HARDWARE NAMES (drive motors + pinpoint are in pedroPathing/Constants.java)
+    // MOTOR NAMES, I WONDER WHAT THE CHANCES ARE IF ANYONE EVER SEES THIS. 
     public static String LEFT_CATAPULT_NAME  = "left_catapult";
     public static String RIGHT_CATAPULT_NAME = "right_catapult";
     public static String INTAKE_NAME         = "intake";
