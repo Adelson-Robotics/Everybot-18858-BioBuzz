@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.Robot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+
+// "arm" is the flower thing
 public class Arm {
     private final Servo left;
     private final Servo right;
