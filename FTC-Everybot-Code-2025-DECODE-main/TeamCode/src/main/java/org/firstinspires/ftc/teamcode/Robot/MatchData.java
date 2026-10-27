@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.Robot;
 
 import com.pedropathing.geometry.Pose;
 
-// Static fields carry over from Auto to TeleOp until the Robot Controller app restarts.
+// for now just holds alliance color and pose, but possibly might add a doglog equivlent 
 public class MatchData {
     public static Alliance lastAutoAlliance = null;
     public static Pose lastAutoPose = null;
