@@ -49,7 +49,7 @@ public abstract class BaseTeleop extends OpMode {
     @Override
     public void start() {
         robot.follower.startTeleopDrive();
-        robot.limelight.start();
+        if (robot.limelight != null) robot.limelight.start();
         robot.catapult.down();
         changeState(State.STARTUP);
     }
@@ -168,7 +168,7 @@ public abstract class BaseTeleop extends OpMode {
 
     // Skipped while a path is running, since a pose jump would make the follower jerk.
     private void updatePoseFromLimelight() {
-        if (state == State.NAVIGATING_TO_TARGET || holdingForAutoShot) return;
+        if (robot.limelight == null || state == State.NAVIGATING_TO_TARGET || holdingForAutoShot) return;
         if (robot.getLinearSpeed() >= Constants.LIMELIGHT_MAX_LINEAR_SPEED
                 || robot.getAngularSpeed() >= Constants.LIMELIGHT_MAX_ANGULAR_SPEED) return;
 

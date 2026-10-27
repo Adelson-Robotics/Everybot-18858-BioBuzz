@@ -19,7 +19,7 @@ public class RobotHardware {
         intake = new Intake(hardwareMap);
         catapult = new Catapult(hardwareMap, isAuto);
         arm = new Arm(hardwareMap);
-        limelight = hardwareMap.get(Limelight3A.class, Constants.LIMELIGHT_NAME);
+        limelight = hardwareMap.tryGet(Limelight3A.class, Constants.LIMELIGHT_NAME); // null if not configured
     }
 
     public void update() {
