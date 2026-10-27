@@ -10,7 +10,7 @@ public enum Alliance {
         return this == RED ? Constants.RED_TARGET_SETPOINT : Constants.BLUE_TARGET_SETPOINT;
     }
 
-    // Drivers face opposite directions on each alliance, so field-centric sticks flip.
+    // flips drive direction 
     public double driveSign() {
         return this == RED ? -1 : 1;
     }
