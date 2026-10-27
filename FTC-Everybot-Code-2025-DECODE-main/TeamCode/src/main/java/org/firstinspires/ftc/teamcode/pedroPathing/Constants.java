@@ -30,10 +30,10 @@ public class Constants {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .rightFrontMotorName("rf")
-            .rightRearMotorName("rb")
-            .leftRearMotorName("lb")
-            .leftFrontMotorName("lf")
+            .rightFrontMotorName("front_right")
+            .rightRearMotorName("back_right")
+            .leftRearMotorName("back_left")
+            .leftFrontMotorName("front_left")
             .xVelocity(73.608)
             .yVelocity(57.583)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
@@ -45,14 +45,11 @@ public class Constants {
             .forwardZeroPowerAcceleration(-30.263)
             .lateralZeroPowerAcceleration(-72.381)
             .headingPIDFCoefficients(new PIDFCoefficients(0.6, 0, 0, 0))
-            //.translationalPIDFCoefficients(new PIDFCoefficients(0.37,0, 0, 0.02))
-           // .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02,0.0,0.01,0,4))
             .centripetalScaling(0)
             .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.18, 0.0487, 0.00189))
             .useSecondaryDrivePIDF(true)
             .useSecondaryHeadingPIDF(true)
             .useSecondaryDrivePIDF(true);
-
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 

@@ -6,41 +6,25 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.math.Vector;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.Teleop.RED;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.Robot.Alliance;
+import org.firstinspires.ftc.teamcode.Robot.MatchData;
+import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
 @Autonomous (name = "RED9PERCHANCE", group = "what does this even do?")
 public class RED9FORTESTING extends OpMode {
 
+    private RobotHardware robot;
     private Follower follower;
     private Timer waitTimer;
 
     private Timer pathTimer, opmodeTimer;
     private TelemetryManager telemetryM;
 
-    private DcMotor intake = null;
-    private double INTAKE_IN_POWER = -0.8;
-    private double INTAKE_OFF_POWER = 0.0;
-
-    private DcMotor catapult1 = null;
-    private DcMotor catapult2 = null;
-
-    private double CATAPULT_UP_POWER = -1.0;
-    private double CATAPULT_DOWN_POWER = 1.0;
-    private double CATAPULT_HOLD_POWER = 0.15;
-
-    private enum CatapultModes {UP, DOWN, HOLD}
-    private CatapultModes catapultMode = CatapultModes.HOLD;
-
-    private Timer catapultUpTimer;
-    private Timer catapultDownTimer;
     private Timer gateWaitTimer;
 
     private int pathState;
@@ -65,7 +49,6 @@ public class RED9FORTESTING extends OpMode {
     private final Pose gateEndPose = new Pose(121.7, 69.5, Math.toRadians(0));
     private final Pose gateAndIntakePose = new Pose(126, 65.44323483670298, Math.toRadians(26));
 
-
     private PathChain startToScore;
     private PathChain scoreToPickup2;
     private PathChain pickup2ToPickup2End;
@@ -76,7 +59,6 @@ public class RED9FORTESTING extends OpMode {
     private PathChain scoreToPickup1, pickup1ToPickup1End, pickup1EndToScore;
     private PathChain scoreToPickup3, pickup3ToPickup3End;
     private PathChain pickup3ToPickup3Start, pickup3ToScoreEnd, scoreEndToEndPose;
-
 
     public void buildPaths() {
         startToScore = follower.pathBuilder()
@@ -89,7 +71,6 @@ public class RED9FORTESTING extends OpMode {
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2EndPose.getHeading())
                 .build();
 
-        // FIX: was gateStartPose.getHeading() - caused forward/backward jitter
         pickup2EndToGateEnd = follower.pathBuilder()
                 .addPath(new BezierCurve(pickup2EndPose, gateStartPose, gateEndPose))
                 .setLinearHeadingInterpolation(pickup2EndPose.getHeading(), gateEndPose.getHeading())
@@ -158,63 +139,27 @@ public class RED9FORTESTING extends OpMode {
                 .build();
     }
 
-    private void launch() {
-        catapultMode = CatapultModes.UP;
-        catapult1.setPower(CATAPULT_UP_POWER);
-        catapult2.setPower(CATAPULT_UP_POWER);
-        catapultUpTimer.resetTimer();
-    }
-
-    private void updateCatapult() {
-        if (catapultMode == CatapultModes.UP && catapultUpTimer.getElapsedTimeSeconds() > 0.25) {
-            catapultMode = CatapultModes.DOWN;
-            catapult1.setPower(CATAPULT_DOWN_POWER);
-            catapult2.setPower(CATAPULT_DOWN_POWER);
-            catapultDownTimer.resetTimer();
-        } else if (catapultMode == CatapultModes.DOWN && catapultDownTimer.getElapsedTimeSeconds() > 0.4) {
-            catapultMode = CatapultModes.HOLD;
-            catapult1.setPower(CATAPULT_HOLD_POWER);
-            catapult2.setPower(CATAPULT_HOLD_POWER);
-        }
-    }
-
-    private boolean isCatapultReady() {
-        Vector velocity = follower.getVelocity();
-        double angularVelocity = follower.getAngularVelocity();
-
-        double linearVelocity = Math.hypot(
-                velocity.getXComponent(),
-                velocity.getYComponent()
-        );
-
-        if (catapultMode == CatapultModes.UP && linearVelocity < 3 && Math.abs(angularVelocity) < 3) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public void autonomousPathUpdate() {
 
         switch (pathState) {
             case 0:
                 follower.followPath(startToScore, true);
-                intake.setPower(INTAKE_IN_POWER);
+                robot.intake.in();
                 setPathState(1);
                 waitTimer.resetTimer();
                 break;
 
             case 1:
                 if (!follower.isBusy()) {
-                    launch();
+                    robot.catapult.launch();
                     waitTimer.resetTimer();
                     setPathState(2);
                 }
                 break;
 
             case 2:
-                if (isCatapultReady() && waitTimer.getElapsedTimeSeconds() > 0.2) {
-                    intake.setPower(INTAKE_IN_POWER);
+                if (robot.isShotFiredAndSettled() && waitTimer.getElapsedTimeSeconds() > 0.2) {
+                    robot.intake.in();
                     follower.followPath(scoreToPickup2, true);
                     setPathState(3);
                 }
@@ -251,16 +196,16 @@ public class RED9FORTESTING extends OpMode {
 
             case 7:
                 if (!follower.isBusy()) {
-                    launch();
+                    robot.catapult.launch();
                     setPathState(8);
                     waitTimer.resetTimer();
                 }
                 break;
 
             case 8:
-                if (isCatapultReady() && waitTimer.getElapsedTimeSeconds() > 0.15) {
+                if (robot.isShotFiredAndSettled() && waitTimer.getElapsedTimeSeconds() > 0.15) {
                     follower.followPath(scoreToGateAndIntake, true);
-                    intake.setPower(INTAKE_IN_POWER);
+                    robot.intake.in();
                     waitTimer.resetTimer();
                     setPathState(9);
                 }
@@ -274,20 +219,18 @@ public class RED9FORTESTING extends OpMode {
                 }
                 break;
 
-
                 case 10:
                 if (!follower.isBusy()) {
-                    launch();
+                    robot.catapult.launch();
                     setPathState(11);
                     waitTimer.resetTimer();
                 }
                 break;
 
-
             case 11:
-                if (isCatapultReady() && waitTimer.getElapsedTimeSeconds() > 0.15) {
+                if (robot.isShotFiredAndSettled() && waitTimer.getElapsedTimeSeconds() > 0.15) {
                     follower.followPath(scoreToGateAndIntake, true);
-                    intake.setPower(INTAKE_IN_POWER);
+                    robot.intake.in();
                     waitTimer.resetTimer();
                     setPathState(12);
                 }
@@ -303,13 +246,13 @@ public class RED9FORTESTING extends OpMode {
 
             case 13:
                 if (!follower.isBusy()) {
-                    launch();
+                    robot.catapult.launch();
                     setPathState(14);
                 }
                 break;
 
             case 14:
-                if (isCatapultReady() && waitTimer.getElapsedTimeSeconds() > 0.15) {
+                if (robot.isShotFiredAndSettled() && waitTimer.getElapsedTimeSeconds() > 0.15) {
                     follower.followPath(scoreToPickup1, true);
                     setPathState(15);
                 }
@@ -317,7 +260,7 @@ public class RED9FORTESTING extends OpMode {
 
             case 15:
                 if (!follower.isBusy()) {
-                    intake.setPower(INTAKE_IN_POWER);
+                    robot.intake.in();
                     follower.followPath(pickup1ToPickup1End, true);
                     setPathState(16);
                 }
@@ -333,14 +276,13 @@ public class RED9FORTESTING extends OpMode {
 
             case 17:
                 if (!follower.isBusy()) {
-                    launch();
+                    robot.catapult.launch();
                     setPathState(18);
                 }
                 break;
 
-
             case 18:
-                if (isCatapultReady()) {
+                if (robot.isShotFiredAndSettled()) {
                     follower.followPath(scoreEndToEndPose, true);
                     setPathState(19);
                 }
@@ -348,7 +290,7 @@ public class RED9FORTESTING extends OpMode {
 
             case 19:
                 if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.3) {
-                    intake.setPower(INTAKE_OFF_POWER);
+                    robot.intake.off();
                     setPathState(-1);
                 }
                 break;
@@ -362,25 +304,22 @@ public class RED9FORTESTING extends OpMode {
 
     @Override
     public void loop() {
-        follower.update();
-        updateCatapult();
+        robot.update();
         autonomousPathUpdate();
         telemetryM.update();
 
         telemetry.addData("path state", pathState);
-        telemetry.addData("catapult mode", catapultMode);
+        telemetry.addData("catapult mode", robot.catapult.getMode());
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.addData("Intake Power", intake.getPower());
-        telemetry.addData("Catapult1 Power", catapult1.getPower());
-        telemetry.addData("Catapult2 Power", catapult2.getPower());
+        telemetry.addData("Intake Power", robot.intake.getPower());
         telemetry.update();
 
         telemetryM.debug("position", follower.getPose());
         telemetryM.debug("velocity", follower.getVelocity());
         telemetryM.debug("path state", pathState);
-        telemetryM.debug("catapult mode", catapultMode);
+        telemetryM.debug("catapult mode", robot.catapult.getMode());
     }
 
     @Override
@@ -388,31 +327,15 @@ public class RED9FORTESTING extends OpMode {
         waitTimer = new Timer();
         pathTimer = new Timer();
         opmodeTimer = new Timer();
-        catapultUpTimer = new Timer();
-        catapultDownTimer = new Timer();
         gateWaitTimer = new Timer();
         opmodeTimer.resetTimer();
 
-        follower = Constants.createFollower(hardwareMap);
+        robot = new RobotHardware(hardwareMap, true);
+        follower = robot.follower;
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         buildPaths();
         follower.setStartingPose(startPose);
-
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(DcMotor.Direction.FORWARD);
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        catapult1 = hardwareMap.get(DcMotor.class, "catapult1");
-        catapult2 = hardwareMap.get(DcMotor.class, "catapult2");
-        catapult1.setDirection(DcMotor.Direction.REVERSE);
-        catapult2.setDirection(DcMotor.Direction.FORWARD);
-        catapult1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        catapult2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        catapultMode = CatapultModes.HOLD;
-        catapult1.setPower(CATAPULT_HOLD_POWER);
-        catapult2.setPower(CATAPULT_HOLD_POWER);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -420,21 +343,19 @@ public class RED9FORTESTING extends OpMode {
 
     @Override
     public void init_loop() {
-        RED.startingPose = follower.getPose();
+        MatchData.saveFromAuto(Alliance.RED, follower.getPose());
     }
 
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        intake.setPower(INTAKE_IN_POWER);
+        robot.intake.in();
         setPathState(0);
     }
 
     @Override
     public void stop() {
-        intake.setPower(0);
-        catapult1.setPower(0);
-        catapult2.setPower(0);
-        RED.startingPose = follower.getPose(); // FIX: removed duplicate line
+        robot.stop();
+        MatchData.saveFromAuto(Alliance.RED, follower.getPose());
     }
 }
