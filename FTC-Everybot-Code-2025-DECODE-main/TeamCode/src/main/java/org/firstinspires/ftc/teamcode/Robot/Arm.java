@@ -13,7 +13,7 @@ public class Arm {
         left = hardwareMap.get(Servo.class, Constants.LEFT_ARM_NAME);
         right = hardwareMap.get(Servo.class, Constants.RIGHT_ARM_NAME);
         left.setDirection(Servo.Direction.FORWARD);
-        right.setDirection(Servo.Direction.REVERSE);
+        right.setDirection(Servo.Direction.FORWARD);
     }
 
     public void up()   { setPosition(Constants.ARM_UP_POS); }

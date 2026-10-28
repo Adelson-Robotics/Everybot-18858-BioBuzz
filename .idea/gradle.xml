@@ -5,9 +5,15 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="C:\Users\SPOON\Downloads\gradle-8.12.1-all\gradle-8.12.1" />
-        <option name="gradleJvm" value="jbr-21" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/FTC-Everybot-Code-2025-DECODE-main" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/FTC-Everybot-Code-2025-DECODE-main" />
+            <option value="$PROJECT_DIR$/FTC-Everybot-Code-2025-DECODE-main/FtcRobotController" />
+            <option value="$PROJECT_DIR$/FTC-Everybot-Code-2025-DECODE-main/TeamCode" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>

@@ -17,8 +17,8 @@ public class Catapult {
         this.useAutoTimings = useAutoTimings;
         left = hardwareMap.get(DcMotor.class, Constants.LEFT_CATAPULT_NAME);
         right = hardwareMap.get(DcMotor.class, Constants.RIGHT_CATAPULT_NAME);
-        left.setDirection(DcMotor.Direction.REVERSE);
-        right.setDirection(DcMotor.Direction.FORWARD);
+        left.setDirection(DcMotor.Direction.FORWARD);
+        right.setDirection(DcMotor.Direction.REVERSE);
         left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hold();

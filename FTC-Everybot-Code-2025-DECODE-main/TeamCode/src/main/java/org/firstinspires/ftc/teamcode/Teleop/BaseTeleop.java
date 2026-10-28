@@ -14,10 +14,9 @@ import org.firstinspires.ftc.teamcode.Limelight.LimelightPoseUpdater;
 import org.firstinspires.ftc.teamcode.Robot.Alliance;
 import org.firstinspires.ftc.teamcode.Robot.Catapult;
 import org.firstinspires.ftc.teamcode.Robot.Constants;
-import org.firstinspires.ftc.teamcode.Robot.MatchData;
 import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
-// Controls: sticks drive, RT shoot, LT/LB intake in/out, Y auto-shot (sticks cancel), D-pad arm up/down
+// Controls: sticks drive, RT shoot, LT/LB intake in/out, Y auto-shot (sticks cancel), RB toggle arm up/down
 public abstract class BaseTeleop extends OpMode {
 
     private enum State { STARTUP, MANUAL_DRIVE, NAVIGATING_TO_TARGET, LAUNCHING }
@@ -29,8 +28,15 @@ public abstract class BaseTeleop extends OpMode {
     private State state = State.STARTUP;
     private final ElapsedTime stateTimer = new ElapsedTime();
     private boolean holdingForAutoShot = false;
+    private boolean armDown = false;
+    private boolean wasRightBumperPressed = false;
 
     protected abstract Alliance chooseAlliance();
+
+    // RED/BLUE TELEOP don't get a pose from auto, so they start at the default
+    protected Pose chooseStartingPose() {
+        return Constants.TELEOP_DEFAULT_START_POSE;
+    }
 
     @Override
     public void init() {
@@ -38,7 +44,7 @@ public abstract class BaseTeleop extends OpMode {
         targetSetpoint = alliance.targetSetpoint();
 
         robot = new RobotHardware(hardwareMap, false);
-        robot.follower.setStartingPose(MatchData.lastAutoPose == null ? new Pose() : MatchData.lastAutoPose);
+        robot.follower.setStartingPose(chooseStartingPose());
         robot.follower.update();
 
         telemetry.addData("Alliance", alliance);
@@ -51,6 +57,8 @@ public abstract class BaseTeleop extends OpMode {
         robot.follower.startTeleopDrive();
         if (robot.limelight != null) robot.limelight.start();
         robot.catapult.down();
+        armDown = false;
+        robot.arm.up();
         changeState(State.STARTUP);
     }
 
@@ -159,11 +167,12 @@ public abstract class BaseTeleop extends OpMode {
     }
 
     private void handleArm() {
-        if (gamepad1.dpad_up) {
-            robot.arm.up();
-        } else if (gamepad1.dpad_down) {
-            robot.arm.down();
+        if (gamepad1.right_bumper && !wasRightBumperPressed) {
+            armDown = !armDown;
+            if (armDown) robot.arm.down();
+            else robot.arm.up();
         }
+        wasRightBumperPressed = gamepad1.right_bumper;
     }
 
     // Skipped while a path is running, since a pose jump would make the follower jerk.
@@ -214,6 +223,7 @@ public abstract class BaseTeleop extends OpMode {
         telemetry.addData("State", state);
         telemetry.addData("Catapult", robot.catapult.getMode());
         telemetry.addData("Intake Power", "%.2f", robot.intake.getPower());
+        telemetry.addData("Arm", armDown ? "DOWN" : "UP");
         telemetry.addData("Arm L / R", "%.3f / %.3f", robot.arm.getLeftPosition(), robot.arm.getRightPosition());
         telemetry.addData("Distance to Target", "%.2f", distanceToTarget());
         telemetry.addData("Pose", "X:%.2f Y:%.2f H:%.2f",

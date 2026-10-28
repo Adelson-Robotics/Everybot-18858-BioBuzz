@@ -15,8 +15,8 @@ public class Constants {
     public static String LIMELIGHT_NAME      = "limelight";
 
     // INTAKE
-    public static double INTAKE_IN_POWER  = -0.8;
-    public static double INTAKE_OUT_POWER = 1.0;
+    public static double INTAKE_IN_POWER  = 0.5;
+    public static double INTAKE_OUT_POWER = -1.0;
     public static double INTAKE_OFF_POWER = 0.0;
 
     // CATAPULT
@@ -25,8 +25,8 @@ public class Constants {
     public static double CATAPULT_HOLD_POWER = 0.0;
 
     // ARM (placeholders, tune with ARM CALIBRATION)
-    public static double ARM_UP_POS   = 0.5;
-    public static double ARM_DOWN_POS = 0.2;
+    public static double ARM_UP_POS   = 0.575;
+    public static double ARM_DOWN_POS = 0.84;
 
     // ALL TELEOPS
     public static double LAUNCH_UP_DURATION       = 0.2;
@@ -43,9 +43,12 @@ public class Constants {
     public static double LIMELIGHT_MAX_LINEAR_SPEED  = 1.8;
     public static double LIMELIGHT_MAX_ANGULAR_SPEED = 1.8;
 
+    // RED + BLUE TELEOP (no pose from auto, so they always start here)
+    public static Pose TELEOP_DEFAULT_START_POSE = new Pose(9, 9, 0);
+
     // RED TELEOP
     public static Pose RED_TARGET_SETPOINT =
-            new Pose(122.30486929977042, 123.12394012200939, Math.toRadians(40));
+            new Pose(57.5, 11, Math.toRadians(90));
 
     // BLUE TELEOP
     public static Pose BLUE_TARGET_SETPOINT =
