@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Constants {
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-0.943)
+            .forwardPodY(-0.725)
             .strafePodX(-4.455)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
