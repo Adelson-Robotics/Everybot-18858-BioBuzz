@@ -16,7 +16,8 @@ import org.firstinspires.ftc.teamcode.Robot.Catapult;
 import org.firstinspires.ftc.teamcode.Robot.Constants;
 import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
-// Controls: sticks drive, RT shoot, LT/LB intake in/out, Y auto-shot (sticks cancel), RB toggle arm up/down
+// Controls: sticks drive, RT shoot, LT/LB intake in/out, Y auto-shot at closest setpoint (sticks cancel),
+// RB toggle arm up/down, BACK reset heading
 public abstract class BaseTeleop extends OpMode {
 
     private enum State { STARTUP, MANUAL_DRIVE, NAVIGATING_TO_TARGET, LAUNCHING }
@@ -41,7 +42,6 @@ public abstract class BaseTeleop extends OpMode {
     @Override
     public void init() {
         alliance = chooseAlliance();
-        targetSetpoint = alliance.targetSetpoint();
 
         robot = new RobotHardware(hardwareMap, false);
         robot.follower.setStartingPose(chooseStartingPose());
@@ -66,6 +66,7 @@ public abstract class BaseTeleop extends OpMode {
     public void loop() {
         robot.follower.update();
         updatePoseFromLimelight();
+        handleHeadingReset();
 
         switch (state) {
             case STARTUP:              handleStartup(); break;
@@ -136,6 +137,7 @@ public abstract class BaseTeleop extends OpMode {
     }
 
     private void startNavigationToTarget() {
+        targetSetpoint = closestTargetSetpoint();
         PathChain path = robot.follower.pathBuilder()
                 .addPath(new Path(new BezierLine(robot.follower::getPose, targetSetpoint)))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(
@@ -175,6 +177,13 @@ public abstract class BaseTeleop extends OpMode {
         wasRightBumperPressed = gamepad1.right_bumper;
     }
 
+    // Keeps X/Y, only fixes heading. RED and BLUE reset to different headings.
+    private void handleHeadingReset() {
+        if (!gamepad1.back) return;
+        Pose pose = robot.follower.getPose();
+        robot.follower.setPose(new Pose(pose.getX(), pose.getY(), alliance.resetHeading()));
+    }
+
     // Skipped while a path is running, since a pose jump would make the follower jerk.
     private void updatePoseFromLimelight() {
         if (robot.limelight == null || state == State.NAVIGATING_TO_TARGET || holdingForAutoShot) return;
@@ -203,15 +212,24 @@ public abstract class BaseTeleop extends OpMode {
                 || Math.abs(gamepad1.right_stick_x) > Constants.DRIVER_DEADZONE;
     }
 
-    private double distanceToTarget() {
+    private double distanceTo(Pose target) {
         Pose pose = robot.follower.getPose();
-        return Math.hypot(pose.getX() - targetSetpoint.getX(), pose.getY() - targetSetpoint.getY());
+        return Math.hypot(pose.getX() - target.getX(), pose.getY() - target.getY());
+    }
+
+    // Read live (not cached in init) so setpoints tuned in Panels take effect right away
+    private Pose closestTargetSetpoint() {
+        Pose closest = null;
+        for (Pose setpoint : alliance.targetSetpoints()) {
+            if (closest == null || distanceTo(setpoint) < distanceTo(closest)) closest = setpoint;
+        }
+        return closest;
     }
 
     private boolean isReadyToLaunch() {
         double rawErr = robot.follower.getPose().getHeading() - targetSetpoint.getHeading();
         double headingErr = Math.atan2(Math.sin(rawErr), Math.cos(rawErr));
-        return distanceToTarget() < Constants.SETPOINT_TOLERANCE
+        return distanceTo(targetSetpoint) < Constants.SETPOINT_TOLERANCE
                 && Math.abs(headingErr) < Constants.LAUNCH_HEADING_TOLERANCE
                 && robot.getLinearSpeed() < Constants.LAUNCH_MAX_LINEAR_SPEED
                 && robot.getAngularSpeed() < Constants.LAUNCH_MAX_ANGULAR_SPEED;
@@ -225,7 +243,9 @@ public abstract class BaseTeleop extends OpMode {
         telemetry.addData("Intake Power", "%.2f", robot.intake.getPower());
         telemetry.addData("Arm", armDown ? "DOWN" : "UP");
         telemetry.addData("Arm L / R", "%.3f / %.3f", robot.arm.getLeftPosition(), robot.arm.getRightPosition());
-        telemetry.addData("Distance to Target", "%.2f", distanceToTarget());
+        Pose closest = closestTargetSetpoint();
+        telemetry.addData("Closest Target", "X:%.2f Y:%.2f (%.2f away)",
+                closest.getX(), closest.getY(), distanceTo(closest));
         telemetry.addData("Pose", "X:%.2f Y:%.2f H:%.2f",
                 pose.getX(), pose.getY(), Math.toDegrees(pose.getHeading()));
         telemetry.update();
