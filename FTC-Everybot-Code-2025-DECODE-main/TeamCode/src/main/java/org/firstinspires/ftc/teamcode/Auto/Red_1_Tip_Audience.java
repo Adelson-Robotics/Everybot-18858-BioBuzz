@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Auto;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -12,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Robot.Alliance;
+import org.firstinspires.ftc.teamcode.Robot.Constants;
 import org.firstinspires.ftc.teamcode.Robot.MatchData;
 import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
@@ -20,12 +20,9 @@ public class Red_1_Tip_Audience extends OpMode {
 
     private RobotHardware robot;
     private Follower follower;
-    private Timer waitTimer;
 
     private Timer pathTimer, opmodeTimer;
     private TelemetryManager telemetryM;
-
-    private Timer gateWaitTimer;
 
     private int pathState;
     private final Pose startPose = new Pose(55, 9, Math.toRadians(270));
@@ -45,94 +42,23 @@ public class Red_1_Tip_Audience extends OpMode {
 
 
 
-    private PathChain startToScore;
-    private PathChain scoreToPickup2;
-    private PathChain pickup2ToPickup2End;
-    private PathChain pickup2EndToGateEnd;
-    private PathChain gateEndToScore;
-    private PathChain scoreToGateAndIntake;
-    private PathChain gateAndIntakeToScore;
-    private PathChain scoreToPickup1, pickup1ToPickup1End, pickup1EndToScore;
-    private PathChain scoreToPickup3, pickup3ToPickup3End;
-    private PathChain pickup3ToPickup3Start, pickup3ToScoreEnd, scoreEndToEndPose;
+    private PathChain startToScore, scoreToRotation, rotationToGardenLineup;
+    private PathChain gardenLineupToGardenPickup, gardenPickupToFlowerAvoidance, flowerAvoidanceToEnd;
+
+    private PathChain buildLine(Pose from, Pose to) {
+        return follower.pathBuilder()
+                .addPath(new BezierLine(from, to))
+                .setLinearHeadingInterpolation(from.getHeading(), to.getHeading())
+                .build();
+    }
 
     public void buildPaths() {
-        startToScore = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, scorePose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .build();
-
-        pickup2ToPickup2End = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose, pickup2EndPose))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2EndPose.getHeading())
-                .build();
-
-        pickup2EndToGateEnd = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup2EndPose, gateStartPose, gateEndPose))
-                .setLinearHeadingInterpolation(pickup2EndPose.getHeading(), gateEndPose.getHeading())
-                .build();
-
-        gateEndToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(gateEndPose, pickup1AvoidPose, pickup2AvoidPose, scorePose))
-                .setLinearHeadingInterpolation(gateEndPose.getHeading(), scorePose.getHeading())
-                .build();
-
-        scoreToGateAndIntake = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, pickup2AvoidPose, pickup1AvoidPose, gateAndIntakePose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), gateAndIntakePose.getHeading())
-                .build();
-
-        gateAndIntakeToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(gateAndIntakePose, pickup1AvoidPose, pickup2AvoidPose, scorePose))
-                .setLinearHeadingInterpolation(gateAndIntakePose.getHeading(), scorePose.getHeading())
-                .build();
-
-        scoreToPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup1Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
-                .build();
-
-        pickup1ToPickup1End = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1Pose, pickup1EndPose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1EndPose.getHeading())
-                .setVelocityConstraint(0.5)
-                .build();
-
-        pickup1EndToScore = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1EndPose, scorePose))
-                .setLinearHeadingInterpolation(pickup1EndPose.getHeading(), scorePose.getHeading())
-                .build();
-
-        scoreToPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup3Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
-                .build();
-
-        pickup3ToPickup3End = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3Pose, pickup3EndPose))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), pickup3EndPose.getHeading())
-                .setVelocityConstraint(0.5)
-                .build();
-
-        pickup3ToPickup3Start = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3EndPose, Pickup3BackOff))
-                .setLinearHeadingInterpolation(pickup3EndPose.getHeading(), Pickup3BackOff.getHeading())
-                .build();
-
-        pickup3ToScoreEnd = follower.pathBuilder()
-                .addPath(new BezierLine(Pickup3BackOff, scoreEndPose))
-                .setLinearHeadingInterpolation(Pickup3BackOff.getHeading(), scoreEndPose.getHeading(), 0.01)
-                .build();
-
-        scoreToPickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(scorePose, pickup2AvoidPose, pickup2Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
-                .build();
-
-        scoreEndToEndPose = follower.pathBuilder()
-                .addPath(new BezierLine(scoreEndPose, endPose))
-                .setLinearHeadingInterpolation(scoreEndPose.getHeading(), endPose.getHeading())
-                .build();
+        startToScore = buildLine(startPose, scorePose);
+        scoreToRotation = buildLine(scorePose, RotationPose);
+        rotationToGardenLineup = buildLine(RotationPose, GardenLineupPose);
+        gardenLineupToGardenPickup = buildLine(GardenLineupPose, GardenPickupPose);
+        gardenPickupToFlowerAvoidance = buildLine(GardenPickupPose, FlowerAvoidance);
+        flowerAvoidanceToEnd = buildLine(FlowerAvoidance, endPose);
     }
 
     public void autonomousPathUpdate() {
@@ -140,13 +66,12 @@ public class Red_1_Tip_Audience extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(startToScore, true);
-                robot.intake.in();
                 setPathState(1);
-                waitTimer.resetTimer();
                 break;
 
             case 1:
-                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.1) {
+                if (!follower.isBusy()) {
+                    // launches
                     robot.catapult.launch();
                     setPathState(2);
                 }
@@ -154,148 +79,44 @@ public class Red_1_Tip_Audience extends OpMode {
 
             case 2:
                 if (robot.isShotFiredAndSettled()) {
-                    robot.intake.in();
-                    follower.followPath(scoreToPickup2, true);
+                    follower.followPath(scoreToRotation, true);
                     setPathState(3);
                 }
                 break;
 
             case 3:
                 if (!follower.isBusy()) {
-                    follower.followPath(pickup2ToPickup2End, true);
+                    follower.followPath(rotationToGardenLineup, true);
                     setPathState(4);
                 }
                 break;
 
             case 4:
                 if (!follower.isBusy()) {
-                    follower.followPath(pickup2EndToGateEnd, 0.85, true);
+                    // drop flower arm, run intake, drive to garden pickup slower
+                    robot.arm.down();
+                    robot.intake.in();
+                    follower.followPath(gardenLineupToGardenPickup, Constants.AUTO_SLOW_DRIVE_POWER, true);
                     setPathState(5);
                 }
                 break;
 
             case 5:
                 if (!follower.isBusy()) {
-                    waitTimer.resetTimer();
+                    follower.followPath(gardenPickupToFlowerAvoidance, true);
                     setPathState(6);
                 }
                 break;
 
             case 6:
-                if (waitTimer.getElapsedTimeSeconds() > 1) {
-                    follower.followPath(gateEndToScore, true);
+                if (!follower.isBusy()) {
+                    follower.followPath(flowerAvoidanceToEnd, true);
                     setPathState(7);
-                    waitTimer.resetTimer();
                 }
                 break;
 
             case 7:
                 if (!follower.isBusy()) {
-                    robot.catapult.launch();
-                    setPathState(8);
-                    waitTimer.resetTimer();
-                }
-                break;
-
-            case 8:
-                if (robot.isShotFiredAndSettled()) {
-                    follower.followPath(scoreToGateAndIntake, true);
-                    robot.intake.in();
-                    waitTimer.resetTimer();
-                    setPathState(9);
-                }
-                break;
-
-            case 9:
-                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 4.5) {
-                    follower.followPath(gateAndIntakeToScore, true);
-                    setPathState(10);
-                    waitTimer.resetTimer();
-                }
-                break;
-
-            case 10:
-                if (!follower.isBusy()) {
-                    robot.catapult.launch();
-                    setPathState(11);
-                }
-                break;
-
-            case 11:
-                if (robot.isShotFiredAndSettled()) {
-                    follower.followPath(scoreToPickup1, true);
-                    setPathState(12);
-                }
-                break;
-
-            case 12:
-                if (!follower.isBusy()) {
-                    robot.intake.in();
-                    follower.followPath(pickup1ToPickup1End, true);
-                    setPathState(13);
-                }
-                break;
-
-            case 13:
-                if (!follower.isBusy()) {
-                    follower.followPath(pickup1EndToScore, true);
-                    setPathState(14);
-                    waitTimer.resetTimer();
-                }
-                break;
-
-            case 14:
-                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.5) {
-                    robot.catapult.launch();
-                    setPathState(15);
-                }
-                break;
-
-            case 15:
-                if (robot.isShotFiredAndSettled()) {
-                    follower.followPath(scoreToPickup3, true);
-                    setPathState(16);
-                }
-                break;
-
-            case 16:
-                if (!follower.isBusy()) {
-                    follower.followPath(pickup3ToPickup3End, true);
-                    setPathState(17);
-                }
-                break;
-
-            case 17:
-                if (!follower.isBusy()) {
-                    follower.followPath(pickup3ToPickup3Start, true);
-                    setPathState(18);
-                }
-                break;
-
-            case 18:
-                if (!follower.isBusy()) {
-                    follower.followPath(pickup3ToScoreEnd, true);
-                    setPathState(19);
-                }
-                break;
-
-            case 19:
-                if (!follower.isBusy()) {
-                    robot.catapult.launch();
-                    setPathState(20);
-                }
-                break;
-
-            case 20:
-                if (robot.isShotFiredAndSettled()) {
-                    follower.followPath(scoreEndToEndPose, true);
-                    setPathState(21);
-                }
-                break;
-
-            case 21:
-                if (!follower.isBusy()) {
-                    robot.intake.off();
                     setPathState(-1);
                 }
                 break;
@@ -329,10 +150,8 @@ public class Red_1_Tip_Audience extends OpMode {
 
     @Override
     public void init() {
-        waitTimer = new Timer();
         pathTimer = new Timer();
         opmodeTimer = new Timer();
-        gateWaitTimer = new Timer();
         opmodeTimer.resetTimer();
 
         robot = new RobotHardware(hardwareMap, true);
@@ -354,7 +173,6 @@ public class Red_1_Tip_Audience extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        robot.intake.in();
         setPathState(0);
     }
 
