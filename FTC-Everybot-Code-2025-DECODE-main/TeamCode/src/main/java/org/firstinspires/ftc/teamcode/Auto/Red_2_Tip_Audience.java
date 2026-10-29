@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.Robot.Alliance;
 import org.firstinspires.ftc.teamcode.Robot.MatchData;
 import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
-@Autonomous(name = "BLUE9", group = "Auto")
-public class BLUE9 extends OpMode {
+@Autonomous (name = "Red_2Tip_Audience", group = "what does this even do?")
+public class Red_2_Tip_Audience extends OpMode {
 
     private RobotHardware robot;
     private Follower follower;
@@ -28,22 +28,50 @@ public class BLUE9 extends OpMode {
     private Timer gateWaitTimer;
 
     private int pathState;
-    private final Pose startPose = new Pose(116.69051321928461, 132.29237947122863, Math.toRadians(37)).mirror();
-    private final Pose scorePose = new Pose(112.6750092686662, 122.45208942216487, Math.toRadians(35)).mirror();
-    private final Pose endPose = new Pose(115,68.5,Math.toRadians(0)).mirror();
+    private final Pose startPose = new Pose(55, 9, Math.toRadians(270));
+    private final Pose AudienceShootPose = new Pose(61.80, 10.17, Math.toRadians(270));
+    // launches
+    private final Pose RotationPose = new Pose(14.11, 31.75, Math.toRadians(90));
 
-    private final Pose pickup1Pose = new Pose(89, 88.5, Math.toRadians(0)).mirror();
-    private final Pose pickup1EndPose = new Pose(123.193, 88.5, Math.toRadians(0)).mirror();
-    private final Pose pickup1AvoidPose = new Pose(92.76049766718508, 66.14618973561431, Math.toRadians(0)).mirror();
-    private final Pose pickup2Pose = new Pose(96,62, Math.toRadians(0)).mirror();
-    private final Pose pickup2EndPose = new Pose(126, 62, Math.toRadians(0)).mirror();
-    private final Pose pickup2AvoidPose = new Pose(72, 84, Math.toRadians(0)).mirror();
+    private final Pose GardenLineupPose = new Pose(10.38, 30.96, Math.toRadians(90));
+    // drop flower arm
+    // run intake
+    private final Pose GardenPickupPose = new Pose(10.19, 14.35, Math.toRadians(90));
+    // drive to this pose slower
+    private final Pose FlowerAvoidance = new Pose(24, 50.7, Math.toRadians(90));
 
-    private final Pose pickup3Pose = new Pose(89, 40, Math.toRadians(0)).mirror();
-    private final Pose pickup3EndPose = new Pose(126, 40, Math.toRadians(0)).mirror();
+    private final Pose IntakeAndDriveStart = new Pose(41.4, 70, Math.toRadians(270));
 
-    private final Pose gateStartPose = new Pose(98, 67, Math.toRadians(0)).mirror();
-    private final Pose gateEndPose = new Pose(121.5, 74, Math.toRadians(360)).mirror();
+    private final Pose IntakeAndDriveEnd = new Pose(41.4, 100, Math.toRadians(270));
+// Stop intaking
+    // lift arm
+    private final Pose PrepareToShoot = new Pose(67.92, 107.56, Math.toRadians(270));
+
+
+    private final Pose ScoringShootPose = new Pose(61.80, 129.74, Math.toRadians(270));
+//shoot
+    private final Pose FlowerLineup = new Pose(57.24, 109.29, Math.toRadians(90));
+// flower arm down
+    // intake on
+
+    private final Pose flowerIntake = new Pose(58.92, 109.29, Math.toRadians(90));
+
+    private final Pose shimmyRight = new Pose(61.35, 123, Math.toRadians(96));
+
+    private final Pose shimmyLeft = new Pose(56.5, 123.5, Math.toRadians(74));
+// shimmy right after this
+
+    private final Pose prepareShoot2 = new Pose(69.21, 96.98, Math.toRadians(270));
+//go to scoringshootpose and shoot catapult
+    private final Pose AboutToPark = new Pose(69.21, 93.98, Math.toRadians(90));
+
+    private final Pose endPose = new Pose(12.8,93.3, Math.toRadians(90));
+    //raise flower arm
+    //stop intake
+
+
+
+
     private PathChain startToScore;
     private PathChain scoreToPickup2;
     private PathChain pickup2ToPickup2End;
@@ -52,31 +80,38 @@ public class BLUE9 extends OpMode {
     private PathChain scoreToGateAndIntake;
     private PathChain gateAndIntakeToScore;
     private PathChain scoreToPickup1, pickup1ToPickup1End, pickup1EndToScore;
-    private PathChain scoreToPickup3, pickup3ToPickup3End, pickup3ToScore, scoreToEndPose;
+    private PathChain scoreToPickup3, pickup3ToPickup3End;
+    private PathChain pickup3ToPickup3Start, pickup3ToScoreEnd, scoreEndToEndPose;
 
     public void buildPaths() {
         startToScore = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .build();
-        scoreToEndPose = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, endPose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), endPose.getHeading())
-                .build();
 
         pickup2ToPickup2End = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2Pose, pickup2EndPose))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2EndPose.getHeading())
                 .build();
-        
+
         pickup2EndToGateEnd = follower.pathBuilder()
                 .addPath(new BezierCurve(pickup2EndPose, gateStartPose, gateEndPose))
-                .setLinearHeadingInterpolation(pickup2EndPose.getHeading(), gateStartPose.getHeading())
+                .setLinearHeadingInterpolation(pickup2EndPose.getHeading(), gateEndPose.getHeading())
                 .build();
 
         gateEndToScore = follower.pathBuilder()
                 .addPath(new BezierCurve(gateEndPose, pickup1AvoidPose, pickup2AvoidPose, scorePose))
                 .setLinearHeadingInterpolation(gateEndPose.getHeading(), scorePose.getHeading())
+                .build();
+
+        scoreToGateAndIntake = follower.pathBuilder()
+                .addPath(new BezierCurve(scorePose, pickup2AvoidPose, pickup1AvoidPose, gateAndIntakePose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), gateAndIntakePose.getHeading())
+                .build();
+
+        gateAndIntakeToScore = follower.pathBuilder()
+                .addPath(new BezierCurve(gateAndIntakePose, pickup1AvoidPose, pickup2AvoidPose, scorePose))
+                .setLinearHeadingInterpolation(gateAndIntakePose.getHeading(), scorePose.getHeading())
                 .build();
 
         scoreToPickup1 = follower.pathBuilder()
@@ -106,17 +141,29 @@ public class BLUE9 extends OpMode {
                 .setVelocityConstraint(0.5)
                 .build();
 
-        pickup3ToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup3EndPose, pickup2Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup3EndPose.getHeading(), scorePose.getHeading())
+        pickup3ToPickup3Start = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3EndPose, Pickup3BackOff))
+                .setLinearHeadingInterpolation(pickup3EndPose.getHeading(), Pickup3BackOff.getHeading())
                 .build();
+
+        pickup3ToScoreEnd = follower.pathBuilder()
+                .addPath(new BezierLine(Pickup3BackOff, scoreEndPose))
+                .setLinearHeadingInterpolation(Pickup3BackOff.getHeading(), scoreEndPose.getHeading(), 0.01)
+                .build();
+
         scoreToPickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(scorePose, pickup2AvoidPose, pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
                 .build();
+
+        scoreEndToEndPose = follower.pathBuilder()
+                .addPath(new BezierLine(scoreEndPose, endPose))
+                .setLinearHeadingInterpolation(scoreEndPose.getHeading(), endPose.getHeading())
+                .build();
     }
 
     public void autonomousPathUpdate() {
+
         switch (pathState) {
             case 0:
                 follower.followPath(startToScore, true);
@@ -126,15 +173,14 @@ public class BLUE9 extends OpMode {
                 break;
 
             case 1:
-                if(!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.7) {
+                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.1) {
                     robot.catapult.launch();
                     setPathState(2);
                 }
                 break;
 
             case 2:
-
-                if(!robot.catapult.isBusy()) {
+                if (robot.isShotFiredAndSettled()) {
                     robot.intake.in();
                     follower.followPath(scoreToPickup2, true);
                     setPathState(3);
@@ -142,28 +188,28 @@ public class BLUE9 extends OpMode {
                 break;
 
             case 3:
-                if(!follower.isBusy()) {
-                    follower.followPath(pickup2ToPickup2End, 0.75, true);
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup2ToPickup2End, true);
                     setPathState(4);
                 }
                 break;
 
             case 4:
-                if(!follower.isBusy()) {
-                    follower.followPath(pickup2EndToGateEnd, 0.65, true);
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup2EndToGateEnd, 0.85, true);
                     setPathState(5);
                 }
                 break;
 
             case 5:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
                     waitTimer.resetTimer();
                     setPathState(6);
                 }
                 break;
 
             case 6:
-                if(waitTimer.getElapsedTimeSeconds() > 8) {
+                if (waitTimer.getElapsedTimeSeconds() > 1) {
                     follower.followPath(gateEndToScore, true);
                     setPathState(7);
                     waitTimer.resetTimer();
@@ -171,7 +217,7 @@ public class BLUE9 extends OpMode {
                 break;
 
             case 7:
-                if(!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 1.8) {
+                if (!follower.isBusy()) {
                     robot.catapult.launch();
                     setPathState(8);
                     waitTimer.resetTimer();
@@ -179,50 +225,110 @@ public class BLUE9 extends OpMode {
                 break;
 
             case 8:
-                if(!robot.catapult.isBusy()) {
-                    follower.followPath(scoreToPickup1, true);
+                if (robot.isShotFiredAndSettled()) {
+                    follower.followPath(scoreToGateAndIntake, true);
+                    robot.intake.in();
+                    waitTimer.resetTimer();
                     setPathState(9);
                 }
                 break;
 
             case 9:
-                if(!follower.isBusy()) {
-                    robot.intake.in();
-                    follower.followPath(pickup1ToPickup1End, 0.75, true);
+                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 4.5) {
+                    follower.followPath(gateAndIntakeToScore, true);
                     setPathState(10);
-                }
-                break;
-
-            case 10:
-                if(!follower.isBusy()) {
-                    follower.followPath(pickup1EndToScore, true);
-                    setPathState(11);
                     waitTimer.resetTimer();
                 }
                 break;
 
-            case 11:
-                if(!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.5) {
+            case 10:
+                if (!follower.isBusy()) {
                     robot.catapult.launch();
+                    setPathState(11);
+                }
+                break;
+
+            case 11:
+                if (robot.isShotFiredAndSettled()) {
+                    follower.followPath(scoreToPickup1, true);
                     setPathState(12);
                 }
                 break;
 
             case 12:
-                if(!robot.catapult.isBusy()){
-                    follower.followPath(scoreToEndPose, true);
+                if (!follower.isBusy()) {
+                    robot.intake.in();
+                    follower.followPath(pickup1ToPickup1End, true);
                     setPathState(13);
                 }
                 break;
 
             case 13:
-                if(!follower.isBusy()) {
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup1EndToScore, true);
+                    setPathState(14);
+                    waitTimer.resetTimer();
+                }
+                break;
+
+            case 14:
+                if (!follower.isBusy() && waitTimer.getElapsedTimeSeconds() > 0.5) {
+                    robot.catapult.launch();
+                    setPathState(15);
+                }
+                break;
+
+            case 15:
+                if (robot.isShotFiredAndSettled()) {
+                    follower.followPath(scoreToPickup3, true);
+                    setPathState(16);
+                }
+                break;
+
+            case 16:
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup3ToPickup3End, true);
+                    setPathState(17);
+                }
+                break;
+
+            case 17:
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup3ToPickup3Start, true);
+                    setPathState(18);
+                }
+                break;
+
+            case 18:
+                if (!follower.isBusy()) {
+                    follower.followPath(pickup3ToScoreEnd, true);
+                    setPathState(19);
+                }
+                break;
+
+            case 19:
+                if (!follower.isBusy()) {
+                    robot.catapult.launch();
+                    setPathState(20);
+                }
+                break;
+
+            case 20:
+                if (robot.isShotFiredAndSettled()) {
+                    follower.followPath(scoreEndToEndPose, true);
+                    setPathState(21);
+                }
+                break;
+
+            case 21:
+                if (!follower.isBusy()) {
                     robot.intake.off();
                     setPathState(-1);
                 }
                 break;
         }
     }
+
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
@@ -269,7 +375,7 @@ public class BLUE9 extends OpMode {
 
     @Override
     public void init_loop() {
-        MatchData.saveFromAuto(Alliance.BLUE, follower.getPose());
+        MatchData.saveFromAuto(Alliance.RED, follower.getPose());
     }
 
     @Override
@@ -282,7 +388,6 @@ public class BLUE9 extends OpMode {
     @Override
     public void stop() {
         robot.stop();
-        MatchData.saveFromAuto(Alliance.BLUE, follower.getPose());
-
+        MatchData.saveFromAuto(Alliance.RED, follower.getPose());
     }
 }

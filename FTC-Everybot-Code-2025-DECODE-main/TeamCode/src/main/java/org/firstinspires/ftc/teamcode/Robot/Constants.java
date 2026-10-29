@@ -48,17 +48,18 @@ public class Constants {
 
     // RED TELEOP (Y drives to whichever setpoint is closer)
     public static Pose RED_TARGET_SETPOINT_1 =
-            new Pose(57.5, 11, Math.toRadians(90));
+            new Pose(61.80, 10.17, Math.toRadians(90));
     // placeholder: old red goal setpoint, tune on the field
     public static Pose RED_TARGET_SETPOINT_2 =
-            new Pose(122.30486929977042, 123.12394012200939, Math.toRadians(40));
+            new Pose(61.80, 129.74, Math.toRadians(270));
 
     // BLUE TELEOP (Y drives to whichever setpoint is closer)
+    // old blue goal setpoint was (27.02, 125.25, 142)
     public static Pose BLUE_TARGET_SETPOINT_1 =
-            new Pose(27.021671826625383, 125.25077399380805, Math.toRadians(142));
+            new Pose(84.7, 132.1, Math.toRadians(90));
     // placeholder: RED_TARGET_SETPOINT_1 mirrored, tune on the field
     public static Pose BLUE_TARGET_SETPOINT_2 =
-            new Pose(86.5, 11, Math.toRadians(90));
+            new Pose(85.4, 15.3, Math.toRadians(90));
 
     // ALL AUTOS
     public static double AUTO_CATAPULT_HOLD_POWER     = 0.15;
