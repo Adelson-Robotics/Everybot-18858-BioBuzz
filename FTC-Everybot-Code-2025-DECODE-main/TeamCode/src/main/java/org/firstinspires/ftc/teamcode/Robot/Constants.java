@@ -68,4 +68,5 @@ public class Constants {
     public static double AUTO_READY_MAX_LINEAR_SPEED  = 3;
     public static double AUTO_READY_MAX_ANGULAR_SPEED = 3;
     public static double AUTO_SLOW_DRIVE_POWER        = 0.5;
+    public static double AUTO_GARDEN_TIMEOUT          = 3.0;
 }

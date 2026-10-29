@@ -25,21 +25,21 @@ public class Red_2_Tip_Audience extends OpMode {
     private TelemetryManager telemetryM;
 
     private int pathState;
-    private final Pose startPose = new Pose(55, 9, Math.toRadians(270));
-    private final Pose AudienceShootPose = new Pose(61.80, 10.17, Math.toRadians(270));
+    private final Pose startPose = new Pose(55, 9, Math.toRadians(90));
+    private final Pose AudienceShootPose = new Pose(61.80, 10.17, Math.toRadians(90));
     // launches
-    private final Pose RotationPose = new Pose(14.11, 31.75, Math.toRadians(90));
+    private final Pose RotationPose = new Pose(14.11, 31.75, Math.toRadians(270));
 
-    private final Pose GardenLineupPose = new Pose(10.38, 30.96, Math.toRadians(90));
+    private final Pose GardenLineupPose = new Pose(8.5, 30.96, Math.toRadians(270));
     // drop flower arm
     // run intake
-    private final Pose GardenPickupPose = new Pose(10.19, 14.35, Math.toRadians(90));
+    private final Pose GardenPickupPose = new Pose(8.5, 14.35, Math.toRadians(270));
     // drive to this pose slower
-    private final Pose FlowerAvoidance = new Pose(24, 50.7, Math.toRadians(90));
+    private final Pose FlowerAvoidance = new Pose(24, 50.7, Math.toRadians(267));
 
-    private final Pose IntakeAndDriveStart = new Pose(41.4, 70, Math.toRadians(270));
+    private final Pose IntakeAndDriveStart = new Pose(33.8, 70, Math.toRadians(90));
 
-    private final Pose IntakeAndDriveEnd = new Pose(41.4, 100, Math.toRadians(270));
+    private final Pose IntakeAndDriveEnd = new Pose(33.8, 100, Math.toRadians(90));
 // Stop intaking
     // lift arm
     private final Pose PrepareToShoot = new Pose(67.92, 107.56, Math.toRadians(270));
@@ -55,17 +55,16 @@ public class Red_2_Tip_Audience extends OpMode {
 
     private final Pose shimmyRight = new Pose(61.35, 123, Math.toRadians(96));
 
-    private final Pose shimmyLeft = new Pose(56.5, 123.5, Math.toRadians(74));
+    private final Pose shimmyLeft = new Pose(56.5, 123.5, Math.toRadians(84));
 // shimmy right after this
 
     private final Pose prepareShoot2 = new Pose(69.21, 96.98, Math.toRadians(270));
 //go to scoringshootpose and shoot catapult
-    private final Pose AboutToPark = new Pose(69.21, 93.98, Math.toRadians(90));
+    private final Pose AboutToPark = new Pose(69.21, 93.98, Math.toRadians(270));
 
-    private final Pose endPose = new Pose(12.8,93.3, Math.toRadians(90));
+    private final Pose endPose = new Pose(12.8,93.3, Math.toRadians(270));
     //raise flower arm
     //stop intake
-
 
 
 
@@ -132,14 +131,15 @@ public class Red_2_Tip_Audience extends OpMode {
             case 3:
                 if (!follower.isBusy()) {
                     follower.followPath(rotationToGardenLineup, true);
+                    robot.arm.down();
                     setPathState(4);
                 }
                 break;
 
             case 4:
-                if (!follower.isBusy()) {
+                // timeout in case it can't reach garden lineup
+                if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds() > Constants.AUTO_GARDEN_TIMEOUT) {
                     // drop flower arm, run intake, drive to garden pickup slower
-                    robot.arm.down();
                     robot.intake.in();
                     follower.followPath(gardenLineupToGardenPickup, Constants.AUTO_SLOW_DRIVE_POWER, true);
                     setPathState(5);
@@ -147,7 +147,8 @@ public class Red_2_Tip_Audience extends OpMode {
                 break;
 
             case 5:
-                if (!follower.isBusy()) {
+                // timeout in case it can't reach garden pickup
+                if (!follower.isBusy() || pathTimer.getElapsedTimeSeconds() > Constants.AUTO_GARDEN_TIMEOUT) {
                     follower.followPath(gardenPickupToFlowerAvoidance, true);
                     setPathState(6);
                 }
