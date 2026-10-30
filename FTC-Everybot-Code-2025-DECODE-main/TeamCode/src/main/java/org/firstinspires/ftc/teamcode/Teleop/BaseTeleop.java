@@ -14,10 +14,11 @@ import org.firstinspires.ftc.teamcode.Limelight.LimelightPoseUpdater;
 import org.firstinspires.ftc.teamcode.Robot.Alliance;
 import org.firstinspires.ftc.teamcode.Robot.Catapult;
 import org.firstinspires.ftc.teamcode.Robot.Constants;
+import org.firstinspires.ftc.teamcode.Robot.MatchData;
 import org.firstinspires.ftc.teamcode.Robot.RobotHardware;
 
-// Controls: sticks drive, RT shoot, LT/LB intake in/out, Y auto-shot at closest setpoint (sticks cancel),
-// RB toggle arm up/down, BACK reset heading
+// Controls: sticks drive, RT shoot, LT/LB intake in/out, RB toggle arm up/down, BACK reset heading
+// Auto-shot at closest setpoint (sticks cancel): Y 4 ball, X 3 ball, B 2 ball, A 1 ball
 public abstract class BaseTeleop extends OpMode {
 
     private enum State { STARTUP, MANUAL_DRIVE, NAVIGATING_TO_TARGET, LAUNCHING }
@@ -25,6 +26,8 @@ public abstract class BaseTeleop extends OpMode {
     private RobotHardware robot;
     private Alliance alliance;
     private Pose targetSetpoint;
+    private double targetShotPower;
+    private String targetShotName = "";
 
     private State state = State.STARTUP;
     private final ElapsedTime stateTimer = new ElapsedTime();
@@ -34,9 +37,9 @@ public abstract class BaseTeleop extends OpMode {
 
     protected abstract Alliance chooseAlliance();
 
-    // RED/BLUE TELEOP don't get a pose from auto, so they start at the default
+    // use the pose auto ended at, or the default if no auto ran
     protected Pose chooseStartingPose() {
-        return Constants.TELEOP_DEFAULT_START_POSE;
+        return MatchData.lastAutoPose == null ? Constants.TELEOP_DEFAULT_START_POSE : MatchData.lastAutoPose;
     }
 
     @Override
@@ -100,7 +103,19 @@ public abstract class BaseTeleop extends OpMode {
             return;
         }
         if (gamepad1.y) {
-            startNavigationToTarget();
+            startNavigationToTarget(Constants.SHOT_4_BALL_POWER, "4 BALL");
+            return;
+        }
+        if (gamepad1.x) {
+            startNavigationToTarget(Constants.SHOT_3_BALL_POWER, "3 BALL");
+            return;
+        }
+        if (gamepad1.b) {
+            startNavigationToTarget(Constants.SHOT_2_BALL_POWER, "2 BALL");
+            return;
+        }
+        if (gamepad1.a) {
+            startNavigationToTarget(Constants.SHOT_1_BALL_POWER, "1 BALL");
             return;
         }
         drive();
@@ -132,11 +147,13 @@ public abstract class BaseTeleop extends OpMode {
 
     private void startLaunch(boolean fromTarget) {
         holdingForAutoShot = fromTarget;
-        robot.catapult.launch();
+        robot.catapult.launch(fromTarget ? targetShotPower : Constants.CATAPULT_UP_POWER);
         changeState(State.LAUNCHING);
     }
 
-    private void startNavigationToTarget() {
+    private void startNavigationToTarget(double shotPower, String shotName) {
+        targetShotPower = shotPower;
+        targetShotName = shotName;
         targetSetpoint = closestTargetSetpoint();
         PathChain path = robot.follower.pathBuilder()
                 .addPath(new Path(new BezierLine(robot.follower::getPose, targetSetpoint)))
@@ -240,6 +257,7 @@ public abstract class BaseTeleop extends OpMode {
         telemetry.addData("Alliance", alliance);
         telemetry.addData("State", state);
         telemetry.addData("Catapult", robot.catapult.getMode());
+        telemetry.addData("Last Auto Shot", targetShotName);
         telemetry.addData("Intake Power", "%.2f", robot.intake.getPower());
         telemetry.addData("Arm", armDown ? "DOWN" : "UP");
         telemetry.addData("Arm L / R", "%.3f / %.3f", robot.arm.getLeftPosition(), robot.arm.getRightPosition());

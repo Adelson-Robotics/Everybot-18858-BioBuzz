@@ -12,6 +12,7 @@ public class Catapult {
     private final boolean useAutoTimings;
     private final ElapsedTime timer = new ElapsedTime();
     private Mode mode = Mode.HOLD;
+    private double upPower = Constants.CATAPULT_UP_POWER;
 
     public Catapult(HardwareMap hardwareMap, boolean useAutoTimings) {
         this.useAutoTimings = useAutoTimings;
@@ -25,7 +26,13 @@ public class Catapult {
     }
 
     public void launch() {
+        launch(Constants.CATAPULT_UP_POWER);
+    }
+
+    // upPower sets how hard it throws, used for the different ball count shots
+    public void launch(double upPower) {
         if (isBusy()) return;
+        this.upPower = upPower;
         setMode(Mode.UP);
     }
 
@@ -57,7 +64,7 @@ public class Catapult {
         mode = newMode;
         timer.reset();
         switch (newMode) {
-            case UP:   setPower(Constants.CATAPULT_UP_POWER); break;
+            case UP:   setPower(upPower); break;
             case DOWN: setPower(Constants.CATAPULT_DOWN_POWER); break;
             case HOLD: setPower(useAutoTimings ? Constants.AUTO_CATAPULT_HOLD_POWER : Constants.CATAPULT_HOLD_POWER); break;
         }

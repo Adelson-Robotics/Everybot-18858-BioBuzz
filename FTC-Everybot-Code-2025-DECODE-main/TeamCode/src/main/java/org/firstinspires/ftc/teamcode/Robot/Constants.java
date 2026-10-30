@@ -43,7 +43,13 @@ public class Constants {
     public static double LIMELIGHT_MAX_LINEAR_SPEED  = 1.8;
     public static double LIMELIGHT_MAX_ANGULAR_SPEED = 1.8;
 
-    // RED + BLUE TELEOP (no pose from auto, so they always start here)
+    // TELEOP SHOTS (same setpoint, different catapult power)
+    public static double SHOT_4_BALL_POWER = -1.0;  // Y
+    public static double SHOT_3_BALL_POWER = -0.96; // X
+    public static double SHOT_2_BALL_POWER = -0.89; // B
+    public static double SHOT_1_BALL_POWER = -0.85; // A
+
+    // RED + BLUE TELEOP start here if no pose was saved from auto
     public static Pose TELEOP_DEFAULT_START_POSE = new Pose(9, 9, 0);
 
     // RED TELEOP (Y drives to whichever setpoint is closer)
