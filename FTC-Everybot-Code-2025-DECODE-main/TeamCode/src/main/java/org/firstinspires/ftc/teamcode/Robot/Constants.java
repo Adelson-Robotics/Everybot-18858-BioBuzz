@@ -15,7 +15,7 @@ public class Constants {
     public static String LIMELIGHT_NAME      = "limelight";
 
     // INTAKE
-    public static double INTAKE_IN_POWER  = 0.5;
+    public static double INTAKE_IN_POWER  = 1.0;
     public static double INTAKE_OUT_POWER = -1.0;
     public static double INTAKE_OFF_POWER = 0.0;
 
@@ -69,4 +69,6 @@ public class Constants {
     public static double AUTO_READY_MAX_ANGULAR_SPEED = 3;
     public static double AUTO_SLOW_DRIVE_POWER        = 0.5;
     public static double AUTO_GARDEN_TIMEOUT          = 3.0;
+    public static double AUTO_SHOT_WAIT               = 0.25;
+    public static double AUTO_FLOWER_WAIT             = 0.5;
 }
