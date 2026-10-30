@@ -62,7 +62,7 @@ public class Constants {
             new Pose(85.4, 15.3, Math.toRadians(90));
 
     // ALL AUTOS
-    public static double AUTO_CATAPULT_HOLD_POWER     = 0.15;
+    public static double AUTO_CATAPULT_HOLD_POWER     = 0;
     public static double AUTO_LAUNCH_UP_DURATION      = 0.25;
     public static double AUTO_LAUNCH_DOWN_DURATION    = 0.4;
     public static double AUTO_READY_MAX_LINEAR_SPEED  = 3;
@@ -71,4 +71,11 @@ public class Constants {
     public static double AUTO_GARDEN_TIMEOUT          = 3.0;
     public static double AUTO_SHOT_WAIT               = 0.25;
     public static double AUTO_FLOWER_WAIT             = 0.5;
+
+    public static final double fieldSize = 144.0;
+
+    // autos are written with red poses, blue rotates them 180 degrees around the field center
+    public static Pose alliancePose(Pose redPose, boolean isBlue) {
+        return isBlue ? redPose.rotate(Math.PI, true).plus(new Pose(fieldSize, fieldSize, 0)) : redPose;
+    }
 }
